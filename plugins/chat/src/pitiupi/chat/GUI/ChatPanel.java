@@ -460,7 +460,13 @@ public class ChatPanel extends JPanel implements PrivateChatUiSink {
         compose.setPreferredSize(new Dimension(0, 88));
         compose.add(tcpAttemptLabel, BorderLayout.NORTH);
         compose.add(inputScroll, BorderLayout.CENTER);
+        JButton localGame = new JButton("Jogo da Memória (local)");
+        localGame.setFocusPainted(false);
+        localGame.setToolTipText("Abre dois tabuleiros neste computador, sem rede");
+        localGame.addActionListener(e -> LocalMemoryGame.open());
+
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        actions.add(localGame);
         actions.add(send);
         compose.add(actions, BorderLayout.SOUTH);
 

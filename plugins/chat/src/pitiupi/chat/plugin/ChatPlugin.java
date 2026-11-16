@@ -7,6 +7,7 @@ import pitiupi.application.peeractions.PeerActionTarget;
 import pitiupi.application.peeractions.PeerTarget;
 import pitiupi.application.presence.UserPeerView;
 import pitiupi.chat.GUI.ChatPanel;
+import pitiupi.chat.GUI.LocalMemoryGame;
 import pitiupi.chat.GUI.SwingMemoryGameUi;
 import pitiupi.chat.control.MemoryGameController;
 import pitiupi.chat.control.PrivateChatController;
@@ -113,6 +114,12 @@ public class ChatPlugin extends Plugin implements PrivateChatHost {
                 "Jogar Jogo da Memória",
                 PeerActionTarget.SINGLE_PEER,
                 this::inviteToMemoryGame
+        ));
+        registrar.register(PeerAction.of(
+                "chat.memory.local",
+                "Jogo da Memória (local, neste computador)",
+                PeerActionTarget.ALL_PEERS,
+                target -> LocalMemoryGame.open()
         ));
     }
 
