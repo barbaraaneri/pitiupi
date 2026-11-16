@@ -1,4 +1,4 @@
-package pitiupi.chat.control;
+package pitiupi.memoria.control;
 
 /** O que o controlador precisa da janela do jogo. Tudo é chamado na thread do Swing. */
 public interface MemoryGameView {

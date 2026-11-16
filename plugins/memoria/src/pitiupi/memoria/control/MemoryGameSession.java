@@ -1,6 +1,6 @@
-package pitiupi.chat.control;
+package pitiupi.memoria.control;
 
-import pitiupi.chat.game.MemoryGameModel;
+import pitiupi.memoria.game.MemoryGameModel;
 
 /** Uma partida em andamento (ou terminada) entre este computador e um peer. */
 public final class MemoryGameSession {

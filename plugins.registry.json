@@ -20,6 +20,13 @@
       "build": "ant",
       "jar": "dist/pitiupi.ping.jar",
       "menuCategory": "Social"
+    },
+    {
+      "id": "memoria",
+      "dir": "plugins/memoria",
+      "build": "ant",
+      "jar": "dist/pitiupi.memoria.jar",
+      "menuCategory": "Jogos"
     }
   ]
 }

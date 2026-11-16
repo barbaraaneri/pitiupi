@@ -1,9 +1,9 @@
-package pitiupi.chat.GUI;
+package pitiupi.memoria.GUI;
 
-import pitiupi.chat.control.MemoryGameController;
-import pitiupi.chat.control.MemoryGameSession;
-import pitiupi.chat.control.MemoryGameView;
-import pitiupi.chat.game.MemoryGameModel;
+import pitiupi.memoria.control.MemoryGameController;
+import pitiupi.memoria.control.MemoryGameSession;
+import pitiupi.memoria.control.MemoryGameView;
+import pitiupi.memoria.game.MemoryGameModel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;

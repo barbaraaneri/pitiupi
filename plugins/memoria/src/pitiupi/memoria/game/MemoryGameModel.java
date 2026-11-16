@@ -1,4 +1,4 @@
-package pitiupi.chat.game;
+package pitiupi.memoria.game;
 
 import java.util.Random;
 

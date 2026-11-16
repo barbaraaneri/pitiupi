@@ -1,4 +1,4 @@
-package pitiupi.chat.control;
+package pitiupi.memoria.control;
 
 /** Serviços de interface que o controlador usa (diálogos, janela e temporizador). */
 public interface MemoryGameUi {

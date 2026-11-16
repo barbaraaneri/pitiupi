@@ -7,22 +7,16 @@ import pitiupi.application.peeractions.PeerActionTarget;
 import pitiupi.application.peeractions.PeerTarget;
 import pitiupi.application.presence.UserPeerView;
 import pitiupi.chat.GUI.ChatPanel;
-import pitiupi.chat.GUI.LocalMemoryGame;
-import pitiupi.chat.GUI.SwingMemoryGameUi;
-import pitiupi.chat.control.MemoryGameController;
 import pitiupi.chat.control.PrivateChatController;
 import pitiupi.chat.control.PrivateChatHost;
 import pitiupi.chat.net.ChatMessage;
 import pitiupi.chat.net.LegacyMpChatMessage;
-import pitiupi.chat.net.MemoryGameMessage;
 import pitiupi.control.ConnectionManager;
 import pitiupi.models.Messages.Message;
 import pitiupi.models.Plugin;
 import pitiupi.models.User;
 import pitiupi.net.tcp.TcpAttemptListener;
 import pitiupi.net.tcp.TcpConnection;
-import pitiupi.presentation.shell.LocalNetworkInfo;
-import pitiupi.presentation.shell.PeerIpv4;
 
 import javax.swing.SwingUtilities;
 import java.io.ByteArrayInputStream;
@@ -30,8 +24,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ChatPlugin extends Plugin implements PrivateChatHost {
 
@@ -39,14 +31,6 @@ public class ChatPlugin extends Plugin implements PrivateChatHost {
     private PluginWorkspace workspace;
     private ConnectionManager connectionManager;
     private PrivateChatController privateChatController;
-    private MemoryGameController memoryGameController;
-
-    /** Uma única thread: as jogadas do jogo da memória saem na mesma ordem em que foram feitas. */
-    private final ExecutorService gameSender = Executors.newSingleThreadExecutor(task -> {
-        Thread thread = new Thread(task, "chat-memory-game-sender");
-        thread.setDaemon(true);
-        return thread;
-    });
 
     @Override
     public void createPlugin(ConnectionManager connectionManager, PluginWorkspace workspace) {
@@ -56,29 +40,8 @@ public class ChatPlugin extends Plugin implements PrivateChatHost {
         this.chatPanel = new ChatPanel(connectionManager);
         chatPanel.setPrivateChatController(privateChatController);
         privateChatController.setUiSink(chatPanel);
-        this.memoryGameController = new MemoryGameController(
-                connectionManager::getUserName,
-                LocalNetworkInfo::bestLocalIpv4,
-                this::sendGameMessage,
-                new SwingMemoryGameUi()
-        );
         bindShellWorkspaceContent(chatPanel);
         installPeerActions(workspace.peerActions());
-    }
-
-    /** Jogo da memória: TCP direto para o IP do oponente, fora da thread do Swing. */
-    private void sendGameMessage(MemoryGameMessage message, String ip) {
-        gameSender.execute(() -> {
-            boolean sent = false;
-            try {
-                sent = connectionManager.sendTcp(message, InetAddress.getByName(ip));
-            } catch (Exception ex) {
-                System.out.println(ex.toString());
-            }
-            if (!sent) {
-                SwingUtilities.invokeLater(() -> memoryGameController.onSendFailed(message));
-            }
-        });
     }
 
     @Override
@@ -109,29 +72,6 @@ public class ChatPlugin extends Plugin implements PrivateChatHost {
                     }
                 }
         ));
-        registrar.register(PeerAction.of(
-                "chat.memory",
-                "Jogar Jogo da Memória",
-                PeerActionTarget.SINGLE_PEER,
-                this::inviteToMemoryGame
-        ));
-        registrar.register(PeerAction.of(
-                "chat.memory.local",
-                "Jogo da Memória (local, neste computador)",
-                PeerActionTarget.ALL_PEERS,
-                target -> LocalMemoryGame.open()
-        ));
-    }
-
-    private void inviteToMemoryGame(PeerTarget target) {
-        if (!(target instanceof PeerTarget.Single single) || single.peer().isSelf()) {
-            return;
-        }
-        UserPeerView peer = single.peer();
-        peer.getInetAddress().ifPresent(address -> memoryGameController.invite(
-                PeerIpv4.fromInetAddress(address),
-                peer.getDisplayName()
-        ));
     }
 
     private void openChatForPeer(PeerTarget target) {
@@ -153,15 +93,13 @@ public class ChatPlugin extends Plugin implements PrivateChatHost {
 
     @Override
     public List<Class<? extends Message>> getMessages() {
-        return List.of(ChatMessage.class, LegacyMpChatMessage.class, MemoryGameMessage.class);
+        return List.of(ChatMessage.class, LegacyMpChatMessage.class);
     }
 
     @Override
     public void receiveMessage(Message message) {
         if (message instanceof ChatMessage msg && chatPanel != null) {
             SwingUtilities.invokeLater(() -> chatPanel.receiveChatMessage(msg));
-        } else if (message instanceof MemoryGameMessage game && memoryGameController != null) {
-            SwingUtilities.invokeLater(() -> memoryGameController.onMessage(game));
         } else if (message instanceof LegacyMpChatMessage legacy && chatPanel != null) {
             SwingUtilities.invokeLater(() -> chatPanel.receiveLegacyMessage(
                     legacy.getTipoMensagem(),

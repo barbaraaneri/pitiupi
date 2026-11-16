@@ -1,8 +1,8 @@
-package pitiupi.chat.control;
+package pitiupi.memoria.control;
 
-import pitiupi.chat.game.MemoryGameModel;
-import pitiupi.chat.game.MemoryGameModel.FlipResult;
-import pitiupi.chat.net.MemoryGameMessage;
+import pitiupi.memoria.game.MemoryGameModel;
+import pitiupi.memoria.game.MemoryGameModel.FlipResult;
+import pitiupi.memoria.net.MemoryGameMessage;
 import pitiupi.presentation.shell.PeerIpv4;
 
 import java.security.SecureRandom;

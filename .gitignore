@@ -10,3 +10,6 @@
 /plugins/mpchat/out/
 /plugins/mpchat/dist/
 /.pitiupi/
+/plugins/memoria/build/
+/plugins/memoria/dist/
+/plugins/memoria/nbproject/private/

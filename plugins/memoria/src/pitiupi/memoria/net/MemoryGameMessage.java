@@ -1,4 +1,4 @@
-package pitiupi.chat.net;
+package pitiupi.memoria.net;
 
 import pitiupi.models.Messages.Message;
 

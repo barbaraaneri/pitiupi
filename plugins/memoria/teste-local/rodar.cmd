@@ -17,6 +17,6 @@ if not defined JBIN (
 )
 set "OUT=%TEMP%\pitiupi-teste-local"
 if exist "%OUT%" rmdir /s /q "%OUT%"
-"%JBIN%javac" -encoding UTF-8 -cp "%CORE%" -sourcepath plugins\chat\src -d "%OUT%" plugins\chat\teste-local\TesteJogoLocal.java
+"%JBIN%javac" -encoding UTF-8 -cp "%CORE%" -sourcepath plugins\memoria\src -d "%OUT%" plugins\memoria\teste-local\TesteJogoLocal.java
 if errorlevel 1 exit /b 1
 start "" "%JBIN%java" -cp "%OUT%;%CORE%" TesteJogoLocal
