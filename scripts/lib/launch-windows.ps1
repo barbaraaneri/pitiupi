@@ -8,11 +8,24 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Find-JavaExe {
-    $cmd = Get-Command java -ErrorAction SilentlyContinue
-    if ($cmd -and $cmd.Source -notmatch '\\WindowsApps\\') {
-        return $cmd.Source
+function Get-JavaMajor([string]$exe) {
+    # "1.8.0_421" -> 8 ; "17.0.21" -> 17
+    $out = cmd /c "`"$exe`" -version 2>&1" | Out-String
+    if ($out -match 'version "(\d+)(?:\.(\d+))?') {
+        $major = [int]$Matches[1]
+        if ($major -eq 1 -and $Matches[2]) { $major = [int]$Matches[2] }
+        return $major
     }
+    return 0
+}
+
+function Find-JavaExe {
+    # O PATH pode ter um Java antigo (ex.: Java 8 da Oracle) antes do JDK 17.
+    # Junta os candidatos e usa o primeiro que seja Java 17 ou mais novo.
+    $candidates = @()
+    Get-Command java -All -ErrorAction SilentlyContinue |
+        Where-Object { $_.Source -notmatch '\\WindowsApps\\' } |
+        ForEach-Object { $candidates += $_.Source }
     $patterns = @(
         (Join-Path $env:ProgramFiles 'Microsoft\jdk-*\bin\java.exe'),
         (Join-Path $env:ProgramFiles 'Eclipse Adoptium\jdk-*\bin\java.exe'),
@@ -21,10 +34,12 @@ function Find-JavaExe {
         (Join-Path $env:LOCALAPPDATA 'Programs\Microsoft\jdk-*\bin\java.exe')
     )
     foreach ($pat in $patterns) {
-        $hit = Get-Item -Path $pat -ErrorAction SilentlyContinue |
+        Get-Item -Path $pat -ErrorAction SilentlyContinue |
             Sort-Object FullName -Descending |
-            Select-Object -First 1
-        if ($hit) { return $hit.FullName }
+            ForEach-Object { $candidates += $_.FullName }
+    }
+    foreach ($exe in $candidates) {
+        if ((Get-JavaMajor $exe) -ge 17) { return $exe }
     }
     return $null
 }
@@ -38,7 +53,7 @@ if (-not (Test-Path -LiteralPath $PitiupiHome)) {
 
 $javaExe = Find-JavaExe
 if (-not $javaExe) {
-    Write-Error "Java do Windows nao encontrado. No PowerShell: winget install Microsoft.OpenJDK.17 --accept-package-agreements"
+    Write-Error "Java 17 (ou mais novo) do Windows nao encontrado. No PowerShell: winget install Microsoft.OpenJDK.17 --accept-package-agreements"
 }
 
 Get-CimInstance Win32_Process -Filter "Name = 'java.exe' OR Name = 'javaw.exe'" -ErrorAction SilentlyContinue |
